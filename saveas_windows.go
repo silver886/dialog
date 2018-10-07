@@ -9,7 +9,7 @@ import (
 	"leoliu.io/logger"
 )
 
-// SaveAs create Save As dialog in the background
+// SaveAs create Save As dialog
 func SaveAs(filter string, initDir string) (path string, err error) {
 	if intLog {
 		intLogger.WithFields(
