@@ -17,7 +17,7 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 				"filter": filter,
 				"path":   path,
 			}),
-		).Debugln("Create save as dialog . . .")
+		).Debugln("Create Save As dialog . . .")
 	}
 
 	cmd, err := BgSaveAs(filter, initDir)
@@ -40,7 +40,7 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 			logger.DebugInfo(1, logrus.Fields{
 				"path": path,
 			}),
-		).Debugln("Create save as dialog")
+		).Debugln("Create Save As dialog")
 	}
 	return
 }
@@ -53,7 +53,7 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 				"filter":            filter,
 				"initial_directory": initDir,
 			}),
-		).Debugln("Create save as dialog . . .")
+		).Debugln("Create Save As dialog . . .")
 	}
 
 	initDir = strings.Replace(initDir, "/", "\\", -1)
