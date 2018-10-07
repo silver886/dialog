@@ -86,7 +86,7 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 				"command_object": cmd,
 				"error":          err,
 			}),
-		).Debugln("Create Save As dialog")
+		).Debugln("Create Save As dialog in the background")
 	}
 
 	if err != nil {
