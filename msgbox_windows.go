@@ -7,7 +7,7 @@ import (
 )
 
 // MsgBox create message box
-func MsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err error) {
+func MsgBox(title string, msg string, args ...string) (output string, err error) {
 	if intLog {
 		intLogger.WithFields(
 			logger.DebugInfo(1, logrus.Fields{
@@ -16,6 +16,39 @@ func MsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err err
 				"arguments": args,
 			}),
 		).Debugln("Create message box . . .")
+	}
+
+	cmd, err := BgMsgBox(title, msg, args...)
+	if err != nil {
+		if intLog {
+			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
+				WithError(err).Errorln("Cannot create message box . . .")
+		}
+		return
+	}
+	cmd.Wait()
+	output = cmd.Strout()
+
+	if intLog {
+		intLogger.WithFields(
+			logger.DebugInfo(1, logrus.Fields{
+				"output": output,
+			}),
+		).Debugln("Create message box . . .")
+	}
+	return
+}
+
+// BgMsgBox create message box in the background
+func BgMsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err error) {
+	if intLog {
+		intLogger.WithFields(
+			logger.DebugInfo(1, logrus.Fields{
+				"title":     title,
+				"message":   msg,
+				"arguments": args,
+			}),
+		).Debugln("Create message box in the background . . .")
 	}
 
 	btn := "0x0"
@@ -126,17 +159,18 @@ func MsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err err
 		true,
 		"powershell", command...,
 	)
+	if err != nil {
+		intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
+			WithError(err).Errorln("Cannot create message box . . .")
+		return nil, err
+	}
+
 	if intLog {
 		intLogger.WithFields(
 			logger.DebugInfo(1, logrus.Fields{
 				"command_object": cmd,
-				"error":          err,
 			}),
 		).Debugln("Generate message box")
-	}
-
-	if err != nil {
-		return nil, err
 	}
 	return cmd, nil
 }
