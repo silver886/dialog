@@ -105,13 +105,13 @@ func MsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err err
 	}
 
 	// Generate command
-	command := []string{`[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")`,
-		`; $FrmMain = New-Object 'System.Windows.Forms.Form'`,
-		`; $FrmMain.TopMost = $` + topMost,
-		`; $Answer = [System.Windows.Forms.MessageBox]::Show($FrmMain, "` + msg + `", "` + title + `", ` + btn + `, ` + icon + `, ` + defaultBtn + `)`,
-		`; $FrmMain.Close()`,
-		`; $FrmMain.Dispose()`,
-		`; Write-Output $Answer`,
+	command := []string{"[void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')",
+		"; $FrmMain = New-Object 'System.Windows.Forms.Form'",
+		"; $FrmMain.TopMost = $" + topMost,
+		"; $Answer = [System.Windows.Forms.MessageBox]::Show($FrmMain, '" + msg + "', '" + title + "', " + btn + ", " + icon + ", " + defaultBtn + ")",
+		"; $FrmMain.Close()",
+		"; $FrmMain.Dispose()",
+		"; Write-Output $Answer",
 	}
 	if intLog {
 		intLogger.WithFields(
