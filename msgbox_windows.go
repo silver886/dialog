@@ -143,10 +143,8 @@ func BgMsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err e
 	command := []string{"[void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')",
 		"; $FrmMain = New-Object 'System.Windows.Forms.Form'",
 		"; $FrmMain.TopMost = $" + topMost,
-		"; $Answer = [System.Windows.Forms.MessageBox]::Show($FrmMain, '" + msg + "', '" + title + "', " + btn + ", " + icon + ", " + defaultBtn + ")",
-		"; $FrmMain.Close()",
+		"; [System.Windows.Forms.MessageBox]::Show($FrmMain, '" + msg + "', '" + title + "', " + btn + ", " + icon + ", " + defaultBtn + ")",
 		"; $FrmMain.Dispose()",
-		"; Write-Output $Answer",
 	}
 	if intLog {
 		intLogger.WithFields(

@@ -70,14 +70,15 @@ func BgFolder(msg string, newFolder bool, initDir string) (cmd *execute.Cmd, err
 
 	// Generate command
 	command := []string{"[void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')",
-		"; $FileBrowser = New-Object System.Windows.Forms.FolderBrowserDialog -Property @{",
+		"; $FolderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog -Property @{",
 		"Description = '" + msg + "'",
 		"; ShowNewFolderButton = $" + newFolderStr,
 		"; SelectedPath = '" + initDir + "'",
 		"; RootFolder='MyComputer'",
 		"}",
-		"; $FileBrowser.ShowDialog()",
-		"; Write-Output $FileBrowser.SelectedPath",
+		"; Write-Output $FolderBrowser.ShowDialog()",
+		"; Write-Output $FolderBrowser.SelectedPath",
+		"; $FolderBrowser.Dispose()",
 	}
 	if intLog {
 		intLogger.WithFields(

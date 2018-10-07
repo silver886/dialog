@@ -31,13 +31,13 @@ func Open(multi bool, filter string, initDir string) (path []string, err error) 
 		return
 	}
 	cmd.Wait()
-	rawPath := cmd.Strout()
 
 	// Parse output
-	path = strings.Split(rawPath, "\r\n")
-	if path[0] == "" {
+	result := strings.Split(cmd.Strout(), "\r\n")
+	if result[0] != "OK" {
 		return nil, errors.New("Cancelled by user")
 	}
+	path = result[1:]
 
 	if intLog {
 		intLogger.WithFields(
@@ -70,13 +70,14 @@ func BgOpen(multi bool, filter string, initDir string) (cmd *execute.Cmd, err er
 
 	// Generate command
 	command := []string{"[void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')",
-		"; $FileBrowser = New-Object System.Windows.Forms.OpenFileDialog -Property @{",
+		"; $OpenFile = New-Object System.Windows.Forms.OpenFileDialog -Property @{",
 		"Multiselect = $" + multiStr,
 		"; Filter = '" + filter + "'",
 		"; InitialDirectory = '" + initDir + "'",
 		"}",
-		"; $FileBrowser.ShowDialog() | Out-Null",
-		"; Write-Output $FileBrowser.FileNames",
+		"; Write-Output $OpenFile.ShowDialog()",
+		"; Write-Output $OpenFile.FileNames",
+		"; $OpenFile.Dispose()",
 	}
 	if intLog {
 		intLogger.WithFields(

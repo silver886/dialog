@@ -30,12 +30,13 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 		return
 	}
 	cmd.Wait()
-	path = cmd.Strout()
 
 	// Parse output
-	if path == "" {
+	result := strings.Split(cmd.Strout(), "\r\n")
+	if result[0] != "OK" {
 		return "", errors.New("Cancelled by user")
 	}
+	path = result[1]
 
 	if intLog {
 		intLogger.WithFields(
@@ -63,12 +64,13 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 
 	// Generate command
 	command := []string{"[void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')",
-		"; $SaveChooser = New-Object System.Windows.Forms.SaveFileDialog -Property @{",
+		"; $SaveFile = New-Object System.Windows.Forms.SaveFileDialog -Property @{",
 		"Filter = '" + filter + "'",
 		"; InitialDirectory = '" + initDir + "'",
 		"}",
-		"; $SaveChooser.ShowDialog() | Out-Null",
-		"; Write-Output $SaveChooser.FileName",
+		"; Write-Output $SaveFile.ShowDialog()",
+		"; Write-Output $SaveFile.FileName",
+		"; $SaveFile.Dispose()",
 	}
 	if intLog {
 		intLogger.WithFields(
