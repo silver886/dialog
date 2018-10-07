@@ -93,6 +93,16 @@ func MsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err err
 			topMost = "true"
 		}
 	}
+	if intLog {
+		intLogger.WithFields(
+			logger.DebugInfo(1, logrus.Fields{
+				"button":         btn,
+				"icon":           icon,
+				"default_button": defaultBtn,
+				"top_most":       topMost,
+			}),
+		).Debugln("Message box arguments . . .")
+	}
 
 	// Generate command
 	command := []string{`[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")`,
