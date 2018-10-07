@@ -24,7 +24,7 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 	if err != nil {
 		if intLog {
 			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot create Save As dialog . . .")
+				WithError(err).Errorln("Cannot create Save As dialog")
 		}
 		return
 	}
@@ -75,7 +75,7 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 		).Debugln("Generate command")
 	}
 
-	// Generate Save As dialog
+	// Create Save As dialog in the background
 	cmd, err = execute.Start(
 		true,
 		"powershell", command...,

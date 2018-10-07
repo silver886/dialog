@@ -22,7 +22,7 @@ func MsgBox(title string, msg string, args ...string) (output string, err error)
 	if err != nil {
 		if intLog {
 			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot create message box . . .")
+				WithError(err).Errorln("Cannot create message box")
 		}
 		return
 	}
@@ -154,14 +154,14 @@ func BgMsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err e
 		).Debugln("Generate command")
 	}
 
-	// Generate message box
+	// Create message box in the background
 	cmd, err = execute.Start(
 		true,
 		"powershell", command...,
 	)
 	if err != nil {
 		intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-			WithError(err).Errorln("Cannot create message box . . .")
+			WithError(err).Errorln("Cannot create message box")
 		return nil, err
 	}
 
