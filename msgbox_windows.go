@@ -34,7 +34,7 @@ func MsgBox(title string, msg string, args ...string) (output string, err error)
 			logger.DebugInfo(1, logrus.Fields{
 				"output": output,
 			}),
-		).Debugln("Create message box . . .")
+		).Debugln("Create message box")
 	}
 	return
 }
@@ -134,7 +134,7 @@ func BgMsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err e
 				"default_button": defaultBtn,
 				"top_most":       topMost,
 			}),
-		).Debugln("Message box arguments . . .")
+		).Debugln("Message box arguments")
 	}
 
 	// Generate command
