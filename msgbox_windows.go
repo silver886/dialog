@@ -170,7 +170,7 @@ func BgMsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err e
 			logger.DebugInfo(1, logrus.Fields{
 				"command_object": cmd,
 			}),
-		).Debugln("Generate message box")
+		).Debugln("Create message box")
 	}
 	return cmd, nil
 }

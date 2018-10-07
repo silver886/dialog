@@ -53,7 +53,7 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 				"filter":            filter,
 				"initial_directory": initDir,
 			}),
-		).Debugln("Create Save As dialog . . .")
+		).Debugln("Create Save As dialog in the background . . .")
 	}
 
 	initDir = strings.Replace(initDir, "/", "\\", -1)
@@ -75,7 +75,7 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 		).Debugln("Generate command")
 	}
 
-	// Generate message box
+	// Generate Save As dialog
 	cmd, err = execute.Start(
 		true,
 		"powershell", command...,
@@ -86,7 +86,7 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 				"command_object": cmd,
 				"error":          err,
 			}),
-		).Debugln("Generate message box")
+		).Debugln("Create Save As dialog")
 	}
 
 	if err != nil {
