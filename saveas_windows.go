@@ -24,7 +24,7 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 	if err != nil {
 		if intLog {
 			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot create message box . . .")
+				WithError(err).Errorln("Cannot create Save As dialog . . .")
 		}
 		return
 	}
