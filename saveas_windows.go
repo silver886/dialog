@@ -32,7 +32,7 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 	path = cmd.Strout()
 
 	if path == "" {
-		return "", errors.New("User canceled")
+		return "", errors.New("Cancelled by user")
 	}
 
 	if intLog {
