@@ -21,6 +21,7 @@ func Open(multi bool, filter string, initDir string) (path []string, err error) 
 		).Debugln("Create Open dialog . . .")
 	}
 
+	// Create Open dialog
 	cmd, err := BgOpen(multi, filter, initDir)
 	if err != nil {
 		if intLog {
