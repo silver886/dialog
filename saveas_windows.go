@@ -14,8 +14,8 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 	if intLog {
 		intLogger.WithFields(
 			logger.DebugInfo(1, logrus.Fields{
-				"filter": filter,
-				"path":   path,
+				"filter":            filter,
+				"initial_directory": initDir,
 			}),
 		).Debugln("Create Save As dialog . . .")
 	}
