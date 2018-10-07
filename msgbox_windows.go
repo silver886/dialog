@@ -18,6 +18,7 @@ func MsgBox(title string, msg string, args ...string) (output string, err error)
 		).Debugln("Create message box . . .")
 	}
 
+	// Create message box
 	cmd, err := BgMsgBox(title, msg, args...)
 	if err != nil {
 		if intLog {
@@ -51,6 +52,7 @@ func BgMsgBox(title string, msg string, args ...string) (cmd *execute.Cmd, err e
 		).Debugln("Create message box in the background . . .")
 	}
 
+	// Parse arguments
 	btn := "0x0"
 	icon := "0x00"
 	defaultBtn := "0x00"

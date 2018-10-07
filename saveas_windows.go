@@ -20,6 +20,7 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 		).Debugln("Create Save As dialog . . .")
 	}
 
+	// Create Save As dialog
 	cmd, err := BgSaveAs(filter, initDir)
 	if err != nil {
 		if intLog {
@@ -31,6 +32,7 @@ func SaveAs(filter string, initDir string) (path string, err error) {
 	cmd.Wait()
 	path = cmd.Strout()
 
+	// Parse output
 	if path == "" {
 		return "", errors.New("Cancelled by user")
 	}
@@ -56,6 +58,7 @@ func BgSaveAs(filter string, initDir string) (cmd *execute.Cmd, err error) {
 		).Debugln("Create Save As dialog in the background . . .")
 	}
 
+	// Parse arguments
 	initDir = strings.Replace(initDir, "/", "\\", -1)
 
 	// Generate command
