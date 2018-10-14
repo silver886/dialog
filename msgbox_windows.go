@@ -59,13 +59,16 @@ func MsgBox(title string, msg string, flag uint) (int, error) {
 	if intLog {
 		intLogger.Debugln("Generate message box")
 	}
-	rtn, _, err := syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW").Call(
+	rtn, _, _ := syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW").Call(
 		0,
 		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(msg))),
 		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(title))),
 		uintptr(flag),
 	)
 	if rtn == 0 {
+		rtn, _, _ := syscall.NewLazyDLL("kernel32.dll").NewProc("GetLastError").Call()
+		err := MsgBoxError(uint32(rtn))
+
 		intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
 			WithError(err).Errorln("Cannot generate message box")
 		return 0, err
