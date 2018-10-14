@@ -83,7 +83,7 @@ func GetNewFileName(title string, initDir string, filter FileNameFilters, flag u
 		return "", err
 	}
 
-	// Get file name
+	// Get new file name
 	var fileName strings.Builder
 	i := 0
 	for i < fileLen && (fileBuf[i] != 0 || fileBuf[i+1] != 0) {
@@ -93,7 +93,7 @@ func GetNewFileName(title string, initDir string, filter FileNameFilters, flag u
 	if intLog {
 		intLogger.WithFields(logrus.Fields{
 			"file_name": fileName.String(),
-		}).Debugln("Get file name")
+		}).Debugln("Get new file name")
 	}
 
 	// Get file extension
