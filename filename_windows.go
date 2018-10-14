@@ -34,5 +34,6 @@ type openFileName struct {
 type FileNameFilters map[string][]string
 
 var (
-	FileNameShowHidden uint32 = 0x10000000
+	FileNameShowHidden  uint32 = 0x10000000
+	FileNameMultiSelect uint32 = 0x00000200
 )

@@ -2,107 +2,106 @@ package dialog
 
 import (
 	"errors"
+	"fmt"
 	"strings"
+	"syscall"
+	"unicode/utf16"
+	"unsafe"
 
 	"github.com/sirupsen/logrus"
-	"leoliu.io/execute"
 	"leoliu.io/logger"
 )
 
-// Open create Open dialog
-func Open(multi bool, filter string, initDir string) (path []string, err error) {
+// GetExistingFileName create get existing file name dialog
+func GetExistingFileName(title string, initDir string, filter FileNameFilters, flag uint32, exLong bool) ([]string, error) {
 	if intLog {
 		intLogger.WithFields(
 			logger.DebugInfo(1, logrus.Fields{
-				"multi":             multi,
-				"filter":            filter,
+				"title":             title,
 				"initial_directory": initDir,
+				"filter":            filter,
+				"flag":              flag,
+				"extremely long":    exLong,
 			}),
-		).Debugln("Create Open dialog . . .")
+		).Debugln("Create get existing file name dialog . . .")
 	}
 
-	// Create Open dialog
-	cmd, err := BgOpen(multi, filter, initDir)
-	if err != nil {
+	// Set parameters
+	ofn := &openFileName{}
+	ofn.structSize = uint32(unsafe.Sizeof(*ofn))
+
+	ofn.flags = 0x02081000 | flag
+	ofn.title, _ = syscall.UTF16PtrFromString(title)
+	ofn.initialDir, _ = syscall.UTF16PtrFromString(initDir)
+
+	var fileLen int
+	if exLong {
+		fileLen = 0x7fffffff
+	} else {
+		fileLen = 0x00000fff
+	}
+	fileBuf := make([]uint16, fileLen)
+
+	ofn.file = utf16ptr(fileBuf)
+	ofn.maxFile = uint32(fileLen)
+
+	var filters []uint16
+	var filtersStr []string
+	for desc, exts := range filter {
+		// "Music File\0*.mp3;*.ogg;*.wav;\0"
+		filters = append(filters, utf16.Encode([]rune(desc))...)
+		filters = append(filters, 0)
+		for _, ext := range exts {
+			s := fmt.Sprintf("*.%s;", ext)
+			filters = append(filters, utf16.Encode([]rune(s))...)
+		}
+		filters = append(filters, 0)
+		filtersStr = append(filtersStr, exts[0])
+	}
+	if filters != nil {
+		// Two extra NUL chars to terminate the list
+		filters = append(filters, 0, 0)
+		ofn.filter = utf16ptr(filters)
+	}
+
+	// Generate get existing file name dialog
+	if intLog {
+		intLogger.Debugln("Generate get existing file name dialog . . .")
+	}
+	rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("GetOpenFileNameW").Call(uintptr(unsafe.Pointer(ofn)))
+	if rtn == 0 {
+		rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("CommDlgExtendedError").Call()
+		if uint32(rtn) == 0 {
+			return nil, errors.New("User cancelled")
+		}
+		err := FileError(uint32(rtn))
+
 		if intLog {
 			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot create Open dialog")
+				WithError(err).Errorln("Cannot generate get existing file name dialog")
 		}
-		return
-	}
-	cmd.Wait()
-
-	// Parse output
-	result := strings.Split(cmd.Strout(), "\r\n")
-	if result[0] != "OK" {
-		return nil, errors.New("Cancelled by user")
-	}
-	path = result[1:]
-
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"path": path,
-			}),
-		).Debugln("Create Open dialog")
-	}
-	return
-}
-
-// BgOpen create Open dialog in the background
-func BgOpen(multi bool, filter string, initDir string) (cmd *execute.Cmd, err error) {
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"multi":             multi,
-				"filter":            filter,
-				"initial_directory": initDir,
-			}),
-		).Debugln("Create Open dialog in the background . . .")
-	}
-
-	// Parse arguments
-	multiStr := "false"
-	if multi {
-		multiStr = "true"
-	}
-	initDir = strings.Replace(initDir, "/", "\\", -1)
-
-	// Generate command
-	command := []string{"[void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')",
-		"; $OpenFile = New-Object System.Windows.Forms.OpenFileDialog -Property @{",
-		"Multiselect = $" + multiStr,
-		"; Filter = '" + filter + "'",
-		"; InitialDirectory = '" + initDir + "'",
-		"}",
-		"; Write-Output $OpenFile.ShowDialog()",
-		"; Write-Output $OpenFile.FileNames",
-		"; $OpenFile.Dispose()",
-	}
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"command": command,
-			}),
-		).Debugln("Generate command")
-	}
-
-	// Create Open dialog in the background
-	cmd, err = execute.Start(
-		true,
-		"powershell", command...,
-	)
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"command_object": cmd,
-				"error":          err,
-			}),
-		).Debugln("Create Open dialog in the background")
-	}
-
-	if err != nil {
 		return nil, err
 	}
-	return cmd, nil
+
+	// Get existing file names
+	var fileNames []string
+	i := 0
+	for i < fileLen && (fileBuf[i] != 0 || fileBuf[i+1] != 0) {
+		i++
+	}
+	fileNames = strings.Split(string(utf16.Decode(fileBuf[:i])), "\x00")
+	if len(fileNames) > 1 {
+		baseDir := fileNames[0] + `\`
+		for i, val := range fileNames[1:] {
+			fileNames[i] = baseDir + val
+		}
+		fileNames = fileNames[:len(fileNames)-1]
+	}
+	if intLog {
+		intLogger.WithFields(logrus.Fields{
+			"file_names": fileNames,
+		}).Debugln("Get existing file name")
+	}
+
+	return fileNames, nil
 }
