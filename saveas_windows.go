@@ -68,7 +68,9 @@ func GetNewFileName(title string, initDir string, filter FileNameFilters, flag u
 	if intLog {
 		intLogger.Debugln("Generate new file name dialog . . .")
 	}
-	rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("GetSaveFileNameW").Call(uintptr(unsafe.Pointer(ofn)))
+	rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("GetSaveFileNameW").Call(
+		uintptr(unsafe.Pointer(ofn)),
+	)
 	if rtn == 0 {
 		rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("CommDlgExtendedError").Call()
 		if uint32(rtn) == 0 {
