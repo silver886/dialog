@@ -9,28 +9,24 @@ import (
 )
 
 var (
-	MsgBoxBtnOk                uint = 0x0
-	MsgBoxBtnOkCancel          uint = 0x1
-	MsgBoxBtnAbortRetryIgnore  uint = 0x2
-	MsgBoxBtnYesNoCancel       uint = 0x3
-	MsgBoxBtnYesNo             uint = 0x4
-	MsgBoxBtnRetryCancel       uint = 0x5
-	MsgBoxBtnCancelTryContinue uint = 0x6
-
-	MsgBoxIconNone        uint = 0x00
-	MsgBoxIconError       uint = 0x10
-	MsgBoxIconQuestion    uint = 0x20
-	MsgBoxIconWarning     uint = 0x30
-	MsgBoxIconInformation uint = 0x40
-
-	MsgBoxDefaultButton1 uint = 0x000
-	MsgBoxDefaultButton2 uint = 0x100
-	MsgBoxDefaultButton3 uint = 0x200
-	MsgBoxDefaultButton4 uint = 0x300
-
-	MsgBoxTopMost uint = 0x41000
-
-	MsgBoxService uint = 0x200000
+	MsgBoxBtnOk                uint = 0x000000
+	MsgBoxBtnOkCancel          uint = 0x000001
+	MsgBoxBtnAbortRetryIgnore  uint = 0x000002
+	MsgBoxBtnYesNoCancel       uint = 0x000003
+	MsgBoxBtnYesNo             uint = 0x000004
+	MsgBoxBtnRetryCancel       uint = 0x000005
+	MsgBoxBtnCancelTryContinue uint = 0x000006
+	MsgBoxIconNone             uint = 0x000000
+	MsgBoxIconError            uint = 0x000010
+	MsgBoxIconQuestion         uint = 0x000020
+	MsgBoxIconWarning          uint = 0x000030
+	MsgBoxIconInformation      uint = 0x000040
+	MsgBoxDefaultButton1       uint = 0x000000
+	MsgBoxDefaultButton2       uint = 0x000100
+	MsgBoxDefaultButton3       uint = 0x000200
+	MsgBoxDefaultButton4       uint = 0x000300
+	MsgBoxTopMost              uint = 0x041000
+	MsgBoxService              uint = 0x200000
 
 	MsgBoxSelectOk       = 1
 	MsgBoxSelectCancel   = 2
