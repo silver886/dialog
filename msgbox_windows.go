@@ -53,7 +53,7 @@ func MsgBox(title string, msg string, flag uint) (int, error) {
 
 	// Generate message box
 	if intLog {
-		intLogger.Debugln("Generate message box")
+		intLogger.Debugln("Generate message box . . .")
 	}
 	rtn, _, _ := syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW").Call(
 		0,
