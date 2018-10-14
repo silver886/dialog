@@ -2,108 +2,90 @@ package dialog
 
 import (
 	"errors"
-	"strings"
+	"reflect"
+	"syscall"
+	"unicode/utf16"
+	"unsafe"
 
 	"github.com/sirupsen/logrus"
-	"leoliu.io/execute"
 	"leoliu.io/logger"
 )
 
+// http://msdn.microsoft.com/en-us/library/windows/desktop/bb773205.aspx
+type browseInfo struct {
+	owner        uintptr
+	root         uintptr
+	displayName  *uint16
+	title        *uint16
+	flags        uint32
+	callbackFunc uintptr
+	lParam       uintptr
+	image        int32
+}
+
+var (
+	FolderEditBox            uint32 = 0x00000010
+	FolderNewDialogStyle     uint32 = 0x00000040
+	FolderNoNewFolderButton  uint32 = 0x00000200
+	FolderBrowseIncludeFiles uint32 = 0x00004000
+)
+
 // Folder create Browse For Folder dialog
-func Folder(msg string, newFolder bool, initDir string) (path string, err error) {
+func Folder(title string, initDir string, flag uint32, exLong bool) (string, error) {
 	if intLog {
 		intLogger.WithFields(
 			logger.DebugInfo(1, logrus.Fields{
-				"message":           msg,
-				"new_folder":        newFolder,
+				"title":             title,
 				"initial_directory": initDir,
+				"flag":              flag,
+				"extremely long":    exLong,
 			}),
 		).Debugln("Create Browse For Folder dialog . . .")
 	}
+	if initDir == "" {
+		// This PC
+		initDir = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"
+	}
 
-	// Create Browse For Folder dialog
-	cmd, err := BgFolder(msg, newFolder, initDir)
-	if err != nil {
+	// Set parameters
+	bi := &browseInfo{}
+
+	bi.flags = flag
+	bi.title, _ = syscall.UTF16PtrFromString(title)
+
+	dir := utf16.Encode([]rune(initDir))
+	dirPtr := (*reflect.SliceHeader)(unsafe.Pointer(&dir)).Data
+	bi.root, _, _ = syscall.NewLazyDLL("shell32.dll").NewProc("SHSimpleIDListFromPath").Call(dirPtr)
+
+	// Generate Browse For Folder dialog
+	if intLog {
+		intLogger.Debugln("Generate Browse For Folder dialog . . .")
+	}
+	rtn, _, _ := syscall.NewLazyDLL("shell32.dll").NewProc("SHBrowseForFolderW").Call(
+		uintptr(unsafe.Pointer(bi)),
+	)
+	if rtn == 0 {
 		if intLog {
 			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot create Browse For Folder dialog")
+				Errorln("User cancelled")
 		}
-		return
-	}
-	cmd.Wait()
-
-	// Parse output
-	result := strings.Split(cmd.Strout(), "\r\n")
-	if result[0] != "OK" {
-		return "", errors.New("Cancelled by user")
-	}
-	path = result[1]
-
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"path": path,
-			}),
-		).Debugln("Create Browse For Folder dialog")
-	}
-	return
-}
-
-// BgFolder create Browse For Folder dialog in the background
-func BgFolder(msg string, newFolder bool, initDir string) (cmd *execute.Cmd, err error) {
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"message":           msg,
-				"new_folder":        newFolder,
-				"initial_directory": initDir,
-			}),
-		).Debugln("Create Browse For Folder dialog in the background . . .")
+		return "", errors.New("User cancelled")
 	}
 
-	// Parse arguments
-	newFolderStr := "false"
-	if newFolder {
-		newFolderStr = "true"
+	// Get folder path
+	var pathLen int
+	if exLong {
+		pathLen = 0x7fffffff
+	} else {
+		pathLen = 0x00000fff
 	}
-	initDir = strings.Replace(initDir, "/", "\\", -1)
-
-	// Generate command
-	command := []string{"[void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')",
-		"; $FolderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog -Property @{",
-		"Description = '" + msg + "'",
-		"; ShowNewFolderButton = $" + newFolderStr,
-		"; SelectedPath = '" + initDir + "'",
-		"; RootFolder='MyComputer'",
-		"}",
-		"; Write-Output $FolderBrowser.ShowDialog()",
-		"; Write-Output $FolderBrowser.SelectedPath",
-		"; $FolderBrowser.Dispose()",
-	}
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"command": command,
-			}),
-		).Debugln("Generate command")
-	}
-
-	// Create Browse For Folder dialog in the background
-	cmd, err = execute.Start(
-		true,
-		"powershell", command...,
+	pathBuf := make([]uint16, pathLen)
+	syscall.NewLazyDLL("shell32.dll").NewProc("SHGetPathFromIDListW").Call(
+		rtn,
+		uintptr(unsafe.Pointer(&pathBuf[0])),
 	)
 	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"command_object": cmd,
-				"error":          err,
-			}),
-		).Debugln("Create Browse For Folder dialog in the background")
+		intLogger.WithFields(logrus.Fields{}).Debugln("Get folder path")
 	}
-
-	if err != nil {
-		return nil, err
-	}
-	return cmd, nil
+	return syscall.UTF16ToString(pathBuf), nil
 }
