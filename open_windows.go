@@ -106,7 +106,7 @@ func GetExistingFileName(title string, initDir string, filter FileNameFilters, f
 	if intLog {
 		intLogger.WithFields(logrus.Fields{
 			"file_names": fileNames,
-		}).Debugln("Get existing file name")
+		}).Debugln("Get existing file names")
 	}
 
 	return fileNames, nil
