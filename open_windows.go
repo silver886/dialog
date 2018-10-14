@@ -72,6 +72,10 @@ func GetExistingFileName(title string, initDir string, filter FileNameFilters, f
 	if rtn == 0 {
 		rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("CommDlgExtendedError").Call()
 		if uint32(rtn) == 0 {
+			if intLog {
+				intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
+					Errorln("User cancelled")
+			}
 			return nil, errors.New("User cancelled")
 		}
 		err := FileError(uint32(rtn))
