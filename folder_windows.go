@@ -31,20 +31,20 @@ var (
 )
 
 // Folder create Browse For Folder dialog
-func Folder(title string, initDir string, flag uint32, exLong bool) (string, error) {
+func Folder(title string, rootDir string, flag uint32, exLong bool) (string, error) {
 	if intLog {
 		intLogger.WithFields(
 			logger.DebugInfo(1, logrus.Fields{
-				"title":             title,
-				"initial_directory": initDir,
-				"flag":              flag,
-				"extremely long":    exLong,
+				"title":          title,
+				"root_directory": rootDir,
+				"flag":           flag,
+				"extremely long": exLong,
 			}),
 		).Debugln("Create Browse For Folder dialog . . .")
 	}
-	if initDir == "" {
+	if rootDir == "" {
 		// This PC
-		initDir = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"
+		rootDir = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"
 	}
 
 	// Set parameters
@@ -53,7 +53,7 @@ func Folder(title string, initDir string, flag uint32, exLong bool) (string, err
 	bi.flags = flag
 	bi.title, _ = syscall.UTF16PtrFromString(title)
 
-	dir := utf16.Encode([]rune(initDir))
+	dir := utf16.Encode([]rune(rootDir))
 	dirPtr := (*reflect.SliceHeader)(unsafe.Pointer(&dir)).Data
 	bi.root, _, _ = syscall.NewLazyDLL("shell32.dll").NewProc("SHSimpleIDListFromPath").Call(dirPtr)
 
