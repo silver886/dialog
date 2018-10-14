@@ -12,8 +12,8 @@ import (
 	"leoliu.io/logger"
 )
 
-// SaveAs create Save As dialog
-func SaveAs(title string, initDir string, filter FileNameFilters, flag uint32, exLong bool) (string, error) {
+// GetNewFileName create new file name dialog
+func GetNewFileName(title string, initDir string, filter FileNameFilters, flag uint32, exLong bool) (string, error) {
 	if intLog {
 		intLogger.WithFields(
 			logger.DebugInfo(1, logrus.Fields{
@@ -23,7 +23,7 @@ func SaveAs(title string, initDir string, filter FileNameFilters, flag uint32, e
 				"flag":              flag,
 				"extremely long":    exLong,
 			}),
-		).Debugln("Create Save As dialog . . .")
+		).Debugln("Create new file name dialog . . .")
 	}
 
 	// Set parameters
@@ -64,9 +64,9 @@ func SaveAs(title string, initDir string, filter FileNameFilters, flag uint32, e
 		ofn.filter = utf16ptr(filters)
 	}
 
-	// Generate Save As dialog
+	// Generate new file name dialog
 	if intLog {
-		intLogger.Debugln("Generate Save As dialog . . .")
+		intLogger.Debugln("Generate new file name dialog . . .")
 	}
 	rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("GetSaveFileNameW").Call(uintptr(unsafe.Pointer(ofn)))
 	if rtn == 0 {
@@ -78,7 +78,7 @@ func SaveAs(title string, initDir string, filter FileNameFilters, flag uint32, e
 
 		if intLog {
 			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot generate Save As dialog")
+				WithError(err).Errorln("Cannot generate new file name dialog")
 		}
 		return "", err
 	}
