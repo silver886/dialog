@@ -7,25 +7,10 @@ import (
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
-
-	"github.com/sirupsen/logrus"
-	"leoliu.io/logger"
 )
 
 // GetNewFileName create new file name dialog
 func GetNewFileName(title string, initDir string, filter FileNameFilters, flag uint32, exLong bool) (string, error) {
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"title":             title,
-				"initial_directory": initDir,
-				"filter":            filter,
-				"flag":              flag,
-				"extremely long":    exLong,
-			}),
-		).Debugln("Create new file name dialog . . .")
-	}
-
 	// Set parameters
 	ofn := &openFileName{}
 	ofn.structSize = uint32(unsafe.Sizeof(*ofn))
@@ -65,27 +50,16 @@ func GetNewFileName(title string, initDir string, filter FileNameFilters, flag u
 	}
 
 	// Generate new file name dialog
-	if intLog {
-		intLogger.Debugln("Generate new file name dialog . . .")
-	}
 	rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("GetSaveFileNameW").Call(
 		uintptr(unsafe.Pointer(ofn)),
 	)
 	if rtn == 0 {
 		rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("CommDlgExtendedError").Call()
 		if uint32(rtn) == 0 {
-			if intLog {
-				intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-					Errorln("User cancelled")
-			}
 			return "", errors.New("User cancelled")
 		}
 		err := FileError(uint32(rtn))
 
-		if intLog {
-			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot generate new file name dialog")
-		}
 		return "", err
 	}
 
@@ -96,21 +70,11 @@ func GetNewFileName(title string, initDir string, filter FileNameFilters, flag u
 		i++
 	}
 	fileName.WriteString(string(utf16.Decode(fileBuf[:i])))
-	if intLog {
-		intLogger.WithFields(logrus.Fields{
-			"file_name": fileName.String(),
-		}).Debugln("Get new file name")
-	}
 
 	// Get file extension
 	if ofn.filterIndex != 0 {
 		fileName.WriteString(".")
 		fileName.WriteString(filtersStr[ofn.filterIndex-1])
-		if intLog {
-			intLogger.WithFields(logrus.Fields{
-				"file_extension": filtersStr[ofn.filterIndex-1],
-			}).Debugln("Get file extension")
-		}
 	}
 
 	return fileName.String(), nil

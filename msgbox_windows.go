@@ -3,9 +3,6 @@ package dialog
 import (
 	"syscall"
 	"unsafe"
-
-	"github.com/sirupsen/logrus"
-	"leoliu.io/logger"
 )
 
 var (
@@ -41,20 +38,6 @@ var (
 
 // MsgBox create message box
 func MsgBox(title string, msg string, flag uint) (int, error) {
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"title":   title,
-				"message": msg,
-				"flag":    flag,
-			}),
-		).Debugln("Create message box . . .")
-	}
-
-	// Generate message box
-	if intLog {
-		intLogger.Debugln("Generate message box . . .")
-	}
 	rtn, _, _ := syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW").Call(
 		0,
 		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(msg))),
@@ -65,19 +48,8 @@ func MsgBox(title string, msg string, flag uint) (int, error) {
 		rtn, _, _ := syscall.NewLazyDLL("kernel32.dll").NewProc("GetLastError").Call()
 		err := MsgBoxError(uint32(rtn))
 
-		if intLog {
-			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot generate message box")
-		}
 		return 0, err
 	}
 
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"button_code": rtn,
-			}),
-		).Debugln("Create message box")
-	}
 	return int(rtn), nil
 }

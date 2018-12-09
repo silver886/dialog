@@ -7,25 +7,10 @@ import (
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
-
-	"github.com/sirupsen/logrus"
-	"leoliu.io/logger"
 )
 
 // GetExistingFileName create get existing file name dialog
 func GetExistingFileName(title string, initDir string, filter FileNameFilters, flag uint32, exLong bool) ([]string, error) {
-	if intLog {
-		intLogger.WithFields(
-			logger.DebugInfo(1, logrus.Fields{
-				"title":             title,
-				"initial_directory": initDir,
-				"filter":            filter,
-				"flag":              flag,
-				"extremely long":    exLong,
-			}),
-		).Debugln("Create get existing file name dialog . . .")
-	}
-
 	// Set parameters
 	ofn := &openFileName{}
 	ofn.structSize = uint32(unsafe.Sizeof(*ofn))
@@ -65,27 +50,16 @@ func GetExistingFileName(title string, initDir string, filter FileNameFilters, f
 	}
 
 	// Generate get existing file name dialog
-	if intLog {
-		intLogger.Debugln("Generate get existing file name dialog . . .")
-	}
 	rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("GetOpenFileNameW").Call(
 		uintptr(unsafe.Pointer(ofn)),
 	)
 	if rtn == 0 {
 		rtn, _, _ := syscall.NewLazyDLL("comdlg32.dll").NewProc("CommDlgExtendedError").Call()
 		if uint32(rtn) == 0 {
-			if intLog {
-				intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-					Errorln("User cancelled")
-			}
 			return nil, errors.New("User cancelled")
 		}
 		err := FileError(uint32(rtn))
 
-		if intLog {
-			intLogger.WithFields(logger.DebugInfo(1, logrus.Fields{})).
-				WithError(err).Errorln("Cannot generate get existing file name dialog")
-		}
 		return nil, err
 	}
 
@@ -103,11 +77,5 @@ func GetExistingFileName(title string, initDir string, filter FileNameFilters, f
 		}
 		fileNames = fileNames[:len(fileNames)-1]
 	}
-	if intLog {
-		intLogger.WithFields(logrus.Fields{
-			"file_names": fileNames,
-		}).Debugln("Get existing file names")
-	}
-
 	return fileNames, nil
 }
